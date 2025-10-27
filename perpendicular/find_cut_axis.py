@@ -258,11 +258,29 @@ class FindCut:
             print("Gaussian blurring was not yet performed, applying modification now...")
         
         self._threshold_BW()
+        if show_steps or save_steps:
+            plt.figure(figsize=(12,4))
+            plt.subplot(1,3,1); plt.imshow(self.image, cmap=self.cmap)
         self._find_contours() # Make sure that the algorithm does not go any further if no cut is found!
         self._find_furthest_points_in_cut()
 
     def _threshold_BW(self):
-        pass
+        """Applies Otsu's threshold to make the blurred image black and white based on an optimal threshold value."""
+        # Normalize so the range is 0-255 and convert to 8-bit unsigned integer
+        img_norm = cv2.normalize(self.image, None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
+
+        # Apply Otsu’s threshold
+        _, img_bin = cv2.threshold(img_norm, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+
+        # Update object instance
+        self.image = img_bin
+        self.modifications.append("Otsu's Threshold (BW)")
+        if not self.origin_updated:
+            self.origin_updated = True
+
+        return self
+
+
 
     def _find_contours(self):
         pass
@@ -274,6 +292,15 @@ class FindCut:
         pass
 
     def draw_lines(self):
+        pass
+
+    def check_correctness(self):
+        pass
+
+    def _check_contours(self):
+        pass
+
+    def _check_cut(self):
         pass
 
     def find_cut_auto(self, show_result: bool = True, save_result: bool = False, show_steps: bool = False, save_steps: bool = False, draw_lines: bool = True):
