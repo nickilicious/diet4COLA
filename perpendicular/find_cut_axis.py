@@ -146,49 +146,6 @@ class FindCut:
         
         return ax  # Return axes for further plotting
 
-    def visualize_annotated_cut(self, save_figure: bool = False):
-        """
-        Shows the cut on top of the frame according to the annotated metadata related to
-        the experiment. If save_figure is set to True, the image will be saved to the
-        specified output path.
-        """
-        
-        # Get points for experiment
-        cell_id_to_keep = self.experiment
-
-        # Load the points data
-        points_file_loc = os.path.join(self.data_dir, "ablation-lineage/", f"{cell_id_to_keep}.lineage")
-                
-        # Check that file exists
-        if not os.path.isfile(points_file_loc):
-            raise FileNotFoundError(f"The file {points_file_loc} does not exist.")
-        # If file exists, extract cut coordinates
-        else:
-            df = pd.read_csv(points_file_loc, sep='\t')
-            # Extract cuts
-            df_cuts = df[df.iloc[:, 0].str.contains("cut", case=False, na=False)]
-
-        # Draw the cut
-        # Extract the points for the cuts (first two rows in this case)
-        x1, y1 = df_cuts.iloc[0]['x'], df.iloc[0]['y']
-        x2, y2 = df_cuts.iloc[1]['x'], df.iloc[1]['y']
-
-        # Get the image axes from visualize_frame (without showing)
-        ax = self.visualize_frame(show=False)
-
-        # Draw the annotated cut
-        ax.plot([x1, x2], [y1, y2], color='red', linewidth=2)
-
-        # Save or show
-        if save_figure:
-            path = os.path.join(self.output_path, f"annotated_cut_{self.experiment}.jpg")
-            plt.savefig(path, dpi=300, bbox_inches='tight')
-            print(f"Figure was savaed to {path}.")
-        else:
-            ax.set_title('Annotated Cut')
-            ax.axis('off')
-            plt.show()
-
     def show_current_image_info(self, show_image: bool = True, print_info: bool = True):
         """Shows the current image, with information on how many modifications have been done."""
         if show_image:
@@ -257,10 +214,13 @@ class FindCut:
             self.blur_image(show_blurred=False)
             print("Gaussian blurring was not yet performed, applying modification now...")
         
+        # Apply thresholding to make image B/W
         self._threshold_BW()
         if show_steps or save_steps:
             plt.figure(figsize=(12,4))
-            plt.subplot(1,3,1); plt.imshow(self.image, cmap=self.cmap)
+            plt.subplot(1,3,1); plt.imshow(self.image, cmap=self.cmap); plt.title("BW Image with Otsu's threshold"); plt.axis('off')
+
+        # Find the contours of the cell and the cut within the cell
         self._find_contours() # Make sure that the algorithm does not go any further if no cut is found!
         self._find_furthest_points_in_cut()
 
@@ -279,7 +239,6 @@ class FindCut:
             self.origin_updated = True
 
         return self
-
 
 
     def _find_contours(self):
