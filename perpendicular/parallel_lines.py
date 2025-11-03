@@ -26,7 +26,7 @@ class ParallelLines:
 
     def __repr__(self):
         pass
-    
+
     def visualize_annotated_cut(self, save_figure: bool = False):
         """
         Shows the cut on top of the frame according to the annotated metadata related to
@@ -51,8 +51,8 @@ class ParallelLines:
 
         # Draw the cut
         # Extract the points for the cuts (first two rows in this case)
-        x1, y1 = df_cuts.iloc[0]['x'], df.iloc[0]['y']
-        x2, y2 = df_cuts.iloc[1]['x'], df.iloc[1]['y']
+        x1, y1 = df_cuts.iloc[0]['x'], df_cuts.iloc[0]['y']
+        x2, y2 = df_cuts.iloc[1]['x'], df_cuts.iloc[1]['y']
 
         # Get the image axes from visualize_frame (without showing)
         ax = self.visualize_frame(show=False)

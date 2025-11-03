@@ -285,6 +285,5 @@ if __name__ == '__main__':
 
     cut = FindCut(experiment)
     # cut.visualize_frame()
-    # cut.visualize_annotated_cut()
     cut.blur_image()
     cut.show_current_image_info(show_image=False)
