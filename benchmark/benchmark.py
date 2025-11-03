@@ -32,7 +32,7 @@ if __name__ == "__main__":
         sys.exit(1)
 
     # Plot 1: Number of points by x_parallel
-    utils.plot_points_vs_x_parallel(df, bins=12, output_path=os.path.join(output_path, "points_by_x_parallel.png"))
+    utils.plot_points_vs_x_parallel(df, bins=10, output_path=os.path.join(output_path, "points_by_x_parallel.png"))
 
     # Plot 2: Number of points by x_perpendicular (abs=False)
     utils.plot_points_vs_x_perpendicular(df, abs=False, bins=40, output_path=os.path.join(output_path, "points_by_x_perpendicular.png"))

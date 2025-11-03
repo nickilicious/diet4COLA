@@ -29,7 +29,7 @@ def plot_points_vs_x_parallel(df: pd.DataFrame, bins: int = None, output_path: s
     first_timepoints = df.groupby('cell_id')['frame'].min().reset_index()
     df = df.merge(first_timepoints, on=['cell_id', 'frame'])
 
-    plt.figure(figsize=(9.5, 5))
+    plt.figure(figsize=(6, 5))
     plt.hist(df['x_parallel'], bins=bins, edgecolor='black')
     plt.xlabel('x_parallel (fraction of cut length)')
     plt.ylabel('Number of points')
@@ -267,21 +267,22 @@ def plot_points_vs_x_perpendicular_overlapping(df: pd.DataFrame, abs: bool = Tru
 
     offsets = np.arange(start_offset, end_offset + 1)
 
-    # Set up bins based on abs parameter
+    # Set up bins based on abs parameter, centered around zero
     if abs:
         max_val = np.ceil(df['x_perpendicular'].abs().max()) if not df['x_perpendicular'].abs().empty else 0.0
         bins = np.arange(0.0, max_val + bin_length, bin_length)
     else:
-        min_val = np.floor(df['x_perpendicular'].min()) if not df['x_perpendicular'].empty else 0.0
-        max_val = np.ceil(df['x_perpendicular'].max()) if not df['x_perpendicular'].empty else 0.0
-        bins = np.arange(min_val, max_val + bin_length, bin_length)
+        max_abs = np.ceil(np.max(np.abs(df['x_perpendicular']))) if not df['x_perpendicular'].empty else 0.0
+        # Center bins so that the central bin is symmetric around zero
+        half_bin = bin_length / 2.0
+        bins = np.arange(-max_abs - half_bin, max_abs + half_bin + bin_length, bin_length)
 
     # Set up colormap
     cmap = cm.get_cmap(colormap)
     norm = Normalize(vmin=start_offset, vmax=end_offset)
 
     # Create figure
-    plt.figure(figsize=(9.5, 5))
+    plt.figure(figsize=(12, 5))
     bin_centers = (bins[:-1] + bins[1:]) / 2
 
     # Plot each offset as a line + means
@@ -376,7 +377,7 @@ def plot_points_vs_frame(df: pd.DataFrame, cell_ids: list = None, output_path: s
     # Drop NaNs in required columns
     df = df.dropna(subset=['frame_rel'])
 
-    plt.figure(figsize=(9.5, 5))
+    plt.figure(figsize=(6, 5))
     bins = np.arange(df['frame_rel'].min() - 0.5, df['frame_rel'].max() + 1.5, 1)
     plt.hist(df['frame_rel'], bins=bins, edgecolor='black')
     plt.xlabel('Frame (relative to cut)')
