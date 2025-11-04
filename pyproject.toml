@@ -1,0 +1,11 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "diet4CoLA"
+version = "0.0.2"
+description = "diet4CoLA"
+authors = [{ name = "Matthias Kovacic" }]
+
+[tool.setuptools.packages.find]
