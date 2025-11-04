@@ -12,9 +12,9 @@ class Points(pd.DataFrame):
 
     def points_by_cell(self, cell_id: str):
         return self[self['cell_id'] == cell_id]
-    
-    def points_by_time(self, time):
-        return self[self['time'] == time]
+
+    def points_by_frame(self, frame):
+        return self[self['frame'] == frame]
     
     def get_unique(self, key):
         return self[key].unique()
