@@ -487,9 +487,6 @@ def plot_velocity_cut_vs_time(df: pd.DataFrame, cell_ids: list = None, output_pa
     return
 
 
-import matplotlib.pyplot as plt
-import pandas as pd
-
 def plot_v_perpendicular_vs_time(
     df: pd.DataFrame,
     cell_ids: list = None,
@@ -548,3 +545,5 @@ def plot_v_perpendicular_vs_time(
         plt.show()
 
     return
+
+
