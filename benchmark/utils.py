@@ -502,6 +502,7 @@ def plot_v_perpendicular_vs_time(
         output_path: str = None,
         abs: bool = True,
         end_offset: int = None,
+        cell_type: str = None,
     ) -> None:
     """
     Plots the perpendicular velocities of points over time (frame_rel) as lines per point,
@@ -513,6 +514,7 @@ def plot_v_perpendicular_vs_time(
     output_path (str): Path to save the plot. If None, the plot is shown instead.
     abs (bool): If True, compute the average of the absolute perpendicular velocities.
     end_offset (int): Ending time offset relative to cut. If None, uses max offset in data.
+    cell_type (str): OPTIONAL Cell type to include in the title.
 
     Returns:
     None
@@ -549,7 +551,7 @@ def plot_v_perpendicular_vs_time(
 
     plt.xlabel('Frame (relative to cut)')
     plt.ylabel('Perpendicular Velocity (pixels/frame)')
-    plt.title('Point Perpendicular Velocities over Time', fontweight='bold')
+    plt.title('Point Perpendicular Velocities over Time' + ('' if not cell_type else f'Cell Type: {cell_type}'), fontweight='bold')
     plt.grid(True, alpha=0.3, linestyle='--')
     plt.legend()
 
