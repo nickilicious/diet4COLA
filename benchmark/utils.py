@@ -441,15 +441,21 @@ def plot_velocities_vs_x_perpendicular(df: pd.DataFrame, abs: bool = True, frame
     return
 
 
-def plot_velocity_cut_vs_time(df: pd.DataFrame, cell_ids: list = None, output_path: str = None) -> None:
+def plot_velocity_cut_vs_time(
+        df: pd.DataFrame,
+        cell_ids: list = None,
+        end_offset: int = None,
+        output_path: str = None,
+    ) -> None:
     """
     Plots the velocities of points over time (frame_rel) as lines per point, and overlays the average velocity.
 
     Parameters:
     df (pd.DataFrame): DataFrame containing 'frame_rel', 'velocity_cut', and 'cell_id' columns.
     cell_ids (list): List of cell IDs to include in the plot. If None, all cells are included.
+    end_offset (int): Ending time offset relative to cut. If None, uses max offset in data.
     output_path (str): Path to save the plot. If None, the plot is shown instead.
-
+    
     Returns:
     None
     """
@@ -459,6 +465,9 @@ def plot_velocity_cut_vs_time(df: pd.DataFrame, cell_ids: list = None, output_pa
     # Filter by cell_ids if provided
     if cell_ids is not None:
         df = df[df['cell_id'].isin(cell_ids)]
+
+    if end_offset is not None:
+        df = df[df['frame_rel'] <= end_offset]
 
     # Drop NaNs in required columns
     df = df.dropna(subset=['frame_rel', 'velocity_cut', 'point_id'])
@@ -487,15 +496,13 @@ def plot_velocity_cut_vs_time(df: pd.DataFrame, cell_ids: list = None, output_pa
     return
 
 
-import matplotlib.pyplot as plt
-import pandas as pd
-
 def plot_v_perpendicular_vs_time(
-    df: pd.DataFrame,
-    cell_ids: list = None,
-    output_path: str = None,
-    abs: bool = True
-) -> None:
+        df: pd.DataFrame,
+        cell_ids: list = None,
+        output_path: str = None,
+        abs: bool = True,
+        end_offset: int = None,
+    ) -> None:
     """
     Plots the perpendicular velocities of points over time (frame_rel) as lines per point,
     and overlays the average perpendicular velocity.
@@ -505,6 +512,7 @@ def plot_v_perpendicular_vs_time(
     cell_ids (list): List of cell IDs to include in the plot. If None, all cells are included.
     output_path (str): Path to save the plot. If None, the plot is shown instead.
     abs (bool): If True, compute the average of the absolute perpendicular velocities.
+    end_offset (int): Ending time offset relative to cut. If None, uses max offset in data.
 
     Returns:
     None
@@ -517,6 +525,9 @@ def plot_v_perpendicular_vs_time(
 
     # Drop NaNs in required columns
     df = df.dropna(subset=['frame_rel', 'v_perpendicular', 'point_id'])
+
+    if end_offset is not None:
+        df = df[df['frame_rel'] <= end_offset]
 
     if abs:
         df['v_perpendicular'] = df['v_perpendicular'].abs()
@@ -539,6 +550,97 @@ def plot_v_perpendicular_vs_time(
     plt.xlabel('Frame (relative to cut)')
     plt.ylabel('Perpendicular Velocity (pixels/frame)')
     plt.title('Point Perpendicular Velocities over Time', fontweight='bold')
+    plt.grid(True, alpha=0.3, linestyle='--')
+    plt.legend()
+
+    if output_path:
+        plt.savefig(output_path, dpi=300)
+    else:
+        plt.show()
+
+    return
+
+
+def compare_v_perpendicular_vs_time(
+        df1: pd.DataFrame,
+        df2: pd.DataFrame,
+        df3: pd.DataFrame = None,
+        label1: str = 'Dataset 1',
+        label2: str = 'Dataset 2',
+        label3: str = 'Dataset 3',
+        cell_ids: list = None,
+        output_path: str = None,
+        abs: bool = True,
+        end_offset: int = None,
+    ) -> None:
+    """
+    Compares the perpendicular velocities of points over time (frame_rel) between two (or three) datasets.
+    Plots the average perpendicular velocity from both datasets on the same graph.
+
+    Parameters:
+    df1 (pd.DataFrame): First DataFrame containing 'frame_rel', 'v_perpendicular', and 'cell_id' columns.
+    df2 (pd.DataFrame): Second DataFrame containing 'frame_rel', 'v_perpendicular', and 'cell_id' columns.
+    df3 (pd.DataFrame): OPTIONAL Third DataFrame containing 'frame_rel', 'v_perpendicular', and 'cell_id' columns.
+    cell_ids (list): List of cell IDs to include in the plot. If None, all cells are included.
+    output_path (str): Path to save the plot. If None, the plot is shown instead.
+    abs (bool): If True, compute the average of the absolute perpendicular velocities.
+    end_offset (int): Ending time offset relative to cut. If None, uses max offset in data.
+    
+    Returns:
+    None
+    """
+    df1 = df1.copy()
+    df2 = df2.copy()
+    if df3 is not None:
+        df3 = df3.copy()
+
+    # Filter by cell_ids if provided
+    if cell_ids is not None:
+        df1 = df1[df1['cell_id'].isin(cell_ids)]
+        df2 = df2[df2['cell_id'].isin(cell_ids)]
+        if df3 is not None:
+            df3 = df3[df3['cell_id'].isin(cell_ids)]
+
+    # Drop NaNs in required columns
+    df1 = df1.dropna(subset=['frame_rel', 'v_perpendicular'])
+    df2 = df2.dropna(subset=['frame_rel', 'v_perpendicular'])
+    if df3 is not None:
+        df3 = df3.dropna(subset=['frame_rel', 'v_perpendicular'])
+
+    if end_offset is not None:
+        df1 = df1[df1['frame_rel'] <= end_offset]
+        df2 = df2[df2['frame_rel'] <= end_offset]
+        if df3 is not None:
+            df3 = df3[df3['frame_rel'] <= end_offset]
+
+    if abs:
+        df1['v_perpendicular'] = df1['v_perpendicular'].abs()
+        df2['v_perpendicular'] = df2['v_perpendicular'].abs()
+        if df3 is not None:
+            df3['v_perpendicular'] = df3['v_perpendicular'].abs()
+
+    plt.figure(figsize=(9.5, 5))
+
+    # Compute average across frames for both datasets
+    avg1 = df1.groupby('frame_rel')['v_perpendicular'].mean()
+    avg2 = df2.groupby('frame_rel')['v_perpendicular'].mean()
+    if df3 is not None:
+        avg3 = df3.groupby('frame_rel')['v_perpendicular'].mean()
+        
+    # Labels depend on abs setting
+    label1 = label1 + ' Average |v_perpendicular|' if abs else label1 + ' Average v_perpendicular'
+    label2 = label2 + ' Average |v_perpendicular|' if abs else label2 + ' Average v_perpendicular'
+    label3 = label3 + ' Average |v_perpendicular|' if abs else label3 + ' Average v_perpendicular'
+
+    # Plot the average velocities
+    plt.plot(avg1.index, avg1.values, color='blue', linewidth=2.5, label=label1)
+    plt.plot(avg2.index, avg2.values, color='orange', linewidth=2.5, label=label2)
+    if df3 is not None:
+        plt.plot(avg3.index, avg3.values, color='green', linewidth=2.5, label=label3)
+
+    plt.xlabel('Frame (relative to cut)')
+    plt.ylabel('Perpendicular Velocity (pixels/frame)')
+    plt.title('Comparison of Point Perpendicular Velocities over Time', fontweight='bold')
     plt.grid(True, alpha=0.3, linestyle='--')
     plt.legend()
 
