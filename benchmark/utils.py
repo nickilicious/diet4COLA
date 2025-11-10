@@ -484,6 +484,7 @@ def plot_velocity_cut_vs_time(
 
     plt.xlabel('Frame (relative to cut)')
     plt.ylabel('Velocity (pixels/frame)')
+    plt.xticks(np.arange(int(df['frame_rel'].min()), int(df['frame_rel'].max()) + 1, 1))
     plt.title('Point Velocities (relative to cut) over Time', fontweight='bold')
     plt.grid(True, alpha=0.3, linestyle='--')
     plt.legend()
@@ -551,6 +552,7 @@ def plot_v_perpendicular_vs_time(
 
     plt.xlabel('Frame (relative to cut)')
     plt.ylabel('Perpendicular Velocity (pixels/frame)')
+    plt.xticks(np.arange(int(df['frame_rel'].min()), int(df['frame_rel'].max()) + 1, 1))
     plt.title('Point Perpendicular Velocities over Time' + ('' if not cell_type else f'Cell Type: {cell_type}'), fontweight='bold')
     plt.grid(True, alpha=0.3, linestyle='--')
     plt.legend()
@@ -642,6 +644,7 @@ def compare_v_perpendicular_vs_time(
 
     plt.xlabel('Frame (relative to cut)')
     plt.ylabel('Perpendicular Velocity (pixels/frame)')
+    plt.xticks(np.arange(int(min(avg1.index.min(), avg2.index.min())), int(max(avg1.index.max(), avg2.index.max())) + 1, 1))
     plt.title('Comparison of Point Perpendicular Velocities over Time', fontweight='bold')
     plt.grid(True, alpha=0.3, linestyle='--')
     plt.legend()
@@ -652,3 +655,53 @@ def compare_v_perpendicular_vs_time(
         plt.show()
 
     return
+
+
+def plot_point_position_mse(
+        df: pd.DataFrame,
+        cell_ids: list = None,
+        output_path: str = None,
+        end_offset: int = None,
+    ) -> None:
+    """
+    Plots the Mean Squared Error (MSE) of point positions over time (frame_rel).
+
+    Parameters:
+    df (pd.DataFrame): DataFrame containing 'frame_rel', 'mse', and 'cell_id' columns.
+    cell_ids (list): List of cell IDs to include in the plot. If None, all cells are included.
+    output_path (str): Path to save the plot. If None, the plot is shown instead.
+
+    Returns:
+    None
+    """
+
+    df = df.copy()
+
+    # Filter by cell_ids if provided
+    if cell_ids is not None:
+        df = df[df['cell_id'].isin(cell_ids)]
+
+    # Drop NaNs in required columns
+    df = df.dropna(subset=['frame_rel', 'se'])
+
+    if end_offset is not None:
+        df = df[(df['frame_rel'] >= -1) & (df['frame_rel'] <= end_offset)]
+
+    mse_per_frame_rel = df.groupby('frame_rel')['se'].mean()
+
+    plt.figure(figsize=(6,5))
+    plt.plot(mse_per_frame_rel.index, mse_per_frame_rel.values, marker='o', linewidth=2, markersize=8)
+    plt.xlabel('Frame relative to cut')
+    plt.ylabel('Mean Squared Error (pixels²)')
+    plt.ylim(bottom=0)
+    plt.title('PIV Point Position Error Over Time', fontweight='bold')
+    plt.grid(True, alpha=0.3)
+
+    if output_path:
+        plt.savefig(output_path, dpi=300)
+    else:
+        plt.show()
+
+    return
+
+
